@@ -1,0 +1,124 @@
+name: MarsDash
+
+entities:
+  User:
+    authenticable: true
+    properties:
+      - name: name
+        type: string
+      - name: email
+        type: email
+      - name: role
+        type: choice
+        options:
+          values: [customer, courier, admin]
+        default: customer
+    policies:
+      create:
+        - access: admin
+      read:
+        - access: restricted
+          allow: User
+          condition: self
+      update:
+        - access: restricted
+          allow: User
+          condition: self
+      delete:
+        - access: admin
+      signup:
+        - access: public
+
+  Restaurant:
+    properties:
+      - name: name
+        type: string
+      - name: description
+        type: text
+      - name: cuisine
+        type: choice
+        options:
+          values: ["Martian Dust-grub", "Earth Fusion", "Hydroponic Greens", "Soylent Supreme"]
+        default: "Earth Fusion"
+      - name: logo
+        type: image
+    policies:
+      create:
+        - access: admin
+      read:
+        - access: public
+      update:
+        - access: admin
+      delete:
+        - access: admin
+
+  MenuItem:
+    properties:
+      - name: name
+        type: string
+      - name: description
+        type: text
+      - name: price
+        type: money
+        options:
+          currency: 'USD'
+      - name: photo
+        type: image
+    belongsTo:
+      - name: restaurant
+        entity: Restaurant
+    policies:
+      create:
+        - access: admin
+      read:
+        - access: public
+      update:
+        - access: admin
+      delete:
+        - access: admin
+
+  Order:
+    properties:
+      - name: status
+        type: choice
+        options:
+          values: [placed, preparing, out_for_delivery, delivered, cancelled]
+        default: placed
+      - name: deliveryFee
+        type: money
+        options:
+          currency: 'USD'
+      - name: totalPrice
+        type: money
+        options:
+          currency: 'USD'
+    belongsTo:
+      - name: customer
+        entity: User
+      - name: restaurant
+        entity: Restaurant
+    policies:
+      create:
+        - access: restricted
+          allow: User
+      read:
+        - access: restricted
+          allow: User
+          condition: self
+      update:
+        - access: restricted
+          allow: User
+          condition: self
+      delete:
+        - access: restricted
+          allow: User
+          condition: self
+
+
+# Health check endpoint for connection testing
+endpoints:
+  health:
+    path: /api/health
+    method: GET
+    policies: []
+    handler: healthCheck
